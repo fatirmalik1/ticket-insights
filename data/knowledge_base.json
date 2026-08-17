@@ -1,0 +1,74 @@
+[
+  {
+    "id": "KB-001",
+    "title": "Login times out after ~30s on slow connections",
+    "tags": ["auth", "timeout", "login"],
+    "symptom": "Users on slower networks see a spinner that never resolves and are eventually logged out with no error message.",
+    "resolution": "The auth token refresh call had no timeout set, so it hung on the socket instead of failing fast. Added an 8s timeout with a retry, and a visible error state.",
+    "resolved_by": "priya.k",
+    "date": "2026-05-14"
+  },
+  {
+    "id": "KB-002",
+    "title": "Payment fails silently for JPY and other zero-decimal currencies",
+    "tags": ["payments", "currency", "billing"],
+    "symptom": "Customers paying in JPY see 'processing' forever; the charge never completes and no error reaches the UI.",
+    "resolution": "Amount was multiplied by 100 for every currency before sending to the processor, which is wrong for zero-decimal currencies like JPY. Added a currency-aware formatter and a regression test per currency type.",
+    "resolved_by": "dan.oyelaran",
+    "date": "2026-06-02"
+  },
+  {
+    "id": "KB-003",
+    "title": "Exported CSV shows garbled characters for non-Latin names",
+    "tags": ["export", "csv", "encoding"],
+    "symptom": "Customer names with accents or non-Latin scripts appear as mojibake when opened in Excel on Windows.",
+    "resolution": "Export was written without a BOM and defaulted to UTF-8; Excel on Windows needs a UTF-8 BOM to detect encoding correctly. Added the BOM to the export writer.",
+    "resolved_by": "priya.k",
+    "date": "2026-06-20"
+  },
+  {
+    "id": "KB-004",
+    "title": "Customers receive the same notification email 2-3 times",
+    "tags": ["notifications", "email", "duplicate"],
+    "symptom": "Support tickets about duplicate 'your order shipped' emails, usually clustered right after a deploy.",
+    "resolution": "The notification worker had no idempotency key, so a retry after a slow ack re-sent the same email. Added a dedupe key per (order_id, notification_type) with a 24h window.",
+    "resolved_by": "wanda.g",
+    "date": "2026-07-01"
+  },
+  {
+    "id": "KB-005",
+    "title": "Dashboard takes 10+ seconds to load for accounts with long history",
+    "tags": ["performance", "dashboard", "database"],
+    "symptom": "Larger, older accounts report the dashboard hanging on load; smaller/newer accounts are fine.",
+    "resolution": "The summary query scanned the full orders table with no date bound. Added a rolling 90-day materialized view the dashboard reads from instead.",
+    "resolved_by": "dan.oyelaran",
+    "date": "2026-07-18"
+  },
+  {
+    "id": "KB-006",
+    "title": "Password reset email never arrives for some domains",
+    "tags": ["auth", "email", "password-reset"],
+    "symptom": "Users on certain corporate email domains never get the reset link; no bounce is visible on our side.",
+    "resolution": "Those domains' spam filters were rejecting mail from our sending IP due to a missing DMARC record. Fixed DNS records; not a code bug, but logged here because it looks identical to a delivery bug from the ticket alone.",
+    "resolved_by": "wanda.g",
+    "date": "2026-07-25"
+  },
+  {
+    "id": "KB-007",
+    "title": "Mobile app crashes when uploading a photo over 8MB",
+    "tags": ["mobile", "upload", "crash"],
+    "symptom": "App crashes with no error dialog when attaching a large photo straight from camera.",
+    "resolution": "Client-side resize ran on the main thread and the crash was an OOM, not a caught exception. Moved resizing to a background task with a hard cap before upload.",
+    "resolved_by": "priya.k",
+    "date": "2026-08-02"
+  },
+  {
+    "id": "KB-008",
+    "title": "Webhook consumer processes the same event twice under load",
+    "tags": ["webhooks", "duplicate", "reliability"],
+    "symptom": "Downstream systems occasionally see two records for one event during traffic spikes.",
+    "resolution": "The webhook queue redelivers on slow acknowledgement, and processing wasn't idempotent. Added an event-id ledger checked before processing.",
+    "resolved_by": "dan.oyelaran",
+    "date": "2026-08-09"
+  }
+]
