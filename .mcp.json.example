@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "jira": {
+      "command": "uvx",
+      "args": ["mcp-atlassian"],
+      "env": {
+        "JIRA_URL": "https://your-instance.atlassian.net",
+        "JIRA_USERNAME": "you@example.com",
+        "JIRA_API_TOKEN": "${JIRA_API_TOKEN}"
+      }
+    },
+    "ticket-kb": {
+      "command": "python3",
+      "args": ["/absolute/path/to/ticket-insights/mcp_server/ticket_kb_server.py"]
+    }
+  }
+}
